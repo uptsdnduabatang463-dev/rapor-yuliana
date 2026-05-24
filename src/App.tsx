@@ -11789,7 +11789,16 @@ const RekapNilai = () => {
           ? `Rekap_Nilai_Semua_Kelas_Sem${selectedSemester}.xlsx`
           : `Rekap_Nilai_Kelas${selectedKelas}_Sem${selectedSemester}.xlsx`;
 
-      XLSX.writeFile(workbook, fileName);
+      const wbout = XLSX.write(workbook, { bookType: "xlsx", type: "array" });
+const blob = new Blob([wbout], {
+  type: "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+});
+const url = URL.createObjectURL(blob);
+const a = document.createElement("a");
+a.href = url;
+a.download = fileName;
+a.click();
+setTimeout(() => URL.revokeObjectURL(url), 5000);
     } catch (err) {
       alert(
         "❌ Gagal membuat Excel: " +
