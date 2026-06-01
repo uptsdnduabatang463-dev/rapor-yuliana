@@ -11802,11 +11802,6 @@ const RekapNilai = () => {
           ? `Rekap_Nilai_Semua_Kelas_Sem${selectedSemester}.xlsx`
           : `Rekap_Nilai_Kelas${selectedKelas}_Sem${selectedSemester}.xlsx`;
 
-      const fileName =
-        selectedKelas === "ALL"
-          ? `Rekap_Nilai_Semua_Kelas_Sem${selectedSemester}.xlsx`
-          : `Rekap_Nilai_Kelas${selectedKelas}_Sem${selectedSemester}.xlsx`;
-
       // ✅ GANTI dengan ini:
       const wbout = XLSX.write(workbook, { 
         bookType: "xlsx", 
@@ -11829,6 +11824,7 @@ const RekapNilai = () => {
         document.body.removeChild(a);
         URL.revokeObjectURL(url);
       }, 1000);
+
     } catch (err) {
       alert(
         "❌ Gagal membuat Excel: " +
