@@ -11802,7 +11802,33 @@ const RekapNilai = () => {
           ? `Rekap_Nilai_Semua_Kelas_Sem${selectedSemester}.xlsx`
           : `Rekap_Nilai_Kelas${selectedKelas}_Sem${selectedSemester}.xlsx`;
 
-      XLSX.writeFile(workbook, fileName);
+      const fileName =
+        selectedKelas === "ALL"
+          ? `Rekap_Nilai_Semua_Kelas_Sem${selectedSemester}.xlsx`
+          : `Rekap_Nilai_Kelas${selectedKelas}_Sem${selectedSemester}.xlsx`;
+
+      // ✅ GANTI dengan ini:
+      const wbout = XLSX.write(workbook, { 
+        bookType: "xlsx", 
+        type: "array" 
+      });
+
+      const blob = new Blob([wbout], { 
+        type: "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet" 
+      });
+
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement("a");
+      a.href = url;
+      a.download = fileName;
+      a.style.display = "none";
+      document.body.appendChild(a);
+      a.click();
+
+      setTimeout(() => {
+        document.body.removeChild(a);
+        URL.revokeObjectURL(url);
+      }, 1000);
     } catch (err) {
       alert(
         "❌ Gagal membuat Excel: " +
