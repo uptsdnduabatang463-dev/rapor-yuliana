@@ -58,7 +58,7 @@ interface KehadiranData {
 }
 
 const endpoint =
-  "https://script.google.com/macros/s/AKfycbyL7u7u9_1fbYADhkAxiJGTYX99DAWxIPhTcVBQGbqqvig_zPZHQRL7B0_X8caEiKXV/exec";
+  "https://script.google.com/macros/s/AKfycbzQfl3bj32WODDuVZ2G53navKZVejAJxa_XWPenjjniu04XWtlcpvEJzRzXY7cVB_bV/exec";
 
 const throttle = (func: Function, delay: number) => {
   let timeoutId: ReturnType<typeof setTimeout> | null = null;
@@ -9216,6 +9216,28 @@ const DataEkstrakurikuler = () => {
                         >
                           {row[header] || ""}
                         </div>
+                      ) : header === "Data2" ? (
+                        <select
+                          value={row[header] || ""}
+                          onChange={(e) =>
+                            handleInputChange(rowIndex, header, e.target.value)
+                          }
+                          disabled={!isEditing}
+                          style={{
+                            width: "100%",
+                            padding: "4px 2px",
+                            border: "1px solid #ddd",
+                            borderRadius: "3px",
+                            boxSizing: "border-box" as const,
+                            backgroundColor: isEditing ? "white" : "#f5f5f5",
+                            cursor: isEditing ? "pointer" : "not-allowed",
+                            fontSize: "12px",
+                            textAlign: "center",
+                          }}
+                        >
+                          <option value="">-- Pilih --</option>
+                          <option value="PRAMUKA">PRAMUKA</option>
+                        </select>
                       ) : (
                         <input
                           type="text"
@@ -9230,7 +9252,7 @@ const DataEkstrakurikuler = () => {
                             padding: "4px 2px",
                             border: "1px solid #ddd",
                             borderRadius: "3px",
-                            boxSizing: "border-box",
+                            boxSizing: "border-box" as const,
                             backgroundColor: isEditing ? "white" : "#f5f5f5",
                             cursor: isEditing ? "text" : "not-allowed",
                             fontSize: "12px",
@@ -11802,14 +11824,13 @@ const RekapNilai = () => {
           ? `Rekap_Nilai_Semua_Kelas_Sem${selectedSemester}.xlsx`
           : `Rekap_Nilai_Kelas${selectedKelas}_Sem${selectedSemester}.xlsx`;
 
-      // ✅ GANTI dengan ini:
-      const wbout = XLSX.write(workbook, { 
-        bookType: "xlsx", 
-        type: "array" 
+      const wbout = XLSX.write(workbook, {
+        bookType: "xlsx",
+        type: "array",
       });
 
-      const blob = new Blob([wbout], { 
-        type: "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet" 
+      const blob = new Blob([wbout], {
+        type: "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
       });
 
       const url = URL.createObjectURL(blob);
@@ -11824,7 +11845,6 @@ const RekapNilai = () => {
         document.body.removeChild(a);
         URL.revokeObjectURL(url);
       }, 1000);
-
     } catch (err) {
       alert(
         "❌ Gagal membuat Excel: " +
