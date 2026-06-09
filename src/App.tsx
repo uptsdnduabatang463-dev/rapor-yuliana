@@ -6638,7 +6638,7 @@ const InputTP = () => {
         action: "update_tp_bulk",
         updates: [
           {
-            rowIndex: originalRowIndex + 1,
+            rowIndex: originalRowIndex,
             values: values,
           },
         ],
