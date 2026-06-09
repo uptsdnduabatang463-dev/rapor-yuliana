@@ -1674,70 +1674,86 @@ const InputNilai = () => {
       doc.setTextColor(100, 100, 100);
       doc.text(`Total siswa: ${actualData.length}`, margin, currentY + 5);
 
-      // ─── AMBIL DATA TP DARI INDEXEDDB ───
-      let tpTableData: { tp: string; rincian: string; bab: string }[] = [];
-      try {
-        const mapelName = actualData[0]?.Data1 || "";
-        const kelasName = (actualData[0]?.Data3 || "").replace(/[^0-9]/g, "");
-        const semesterName = actualData[0]?.Data2 || "";
+      // ─── AMBIL DATA TP DARI INDEXEDDB + FALLBACK SERVER ───
+let tpTableData: { tp: string; rincian: string; bab: string }[] = [];
+try {
+  const mapelName = actualData[0]?.Data1 || "";
+  const kelasName = (actualData[0]?.Data3 || "").replace(/[^0-9]/g, "");
+  const semesterName = actualData[0]?.Data2 || "";
+  const semesterAngka = String(parseInt(semesterName) || semesterName);
+  const kelasAngka = kelasName.replace(/[^0-9]/g, "");
 
-        const tpCached = await idbLoad(STORE_TP);
-        if (tpCached && tpCached.length > 1) {
-          const tpRows = tpCached.slice(1);
-
-          // ─── DEBUG: tampilkan 3 baris pertama TP ───
-          console.log("🔎 ALL KEYS di row pertama:", Object.keys(tpRows[0]));
-          console.log("🔎 Full row pertama:", JSON.stringify(tpRows[0]));
-
-          tpTableData = tpRows
-            .filter((row: any) => {
-              const rowMapel = (row.Data1 || "")
-                .replace(/[\u200B\u200C\u200D\uFEFF]/g, "")
-                .trim();
-              const rowKelas = String(row.Data6 ?? "").trim();
-              const rowSemester = String(row.Data5 ?? "").trim();
-              const semesterAngka = String(
-                parseInt(semesterName) || semesterName
-              );
-              const kelasAngka = kelasName.replace(/[^0-9]/g, "");
-              return (
-                rowMapel.toLowerCase() === mapelName.toLowerCase() &&
-                rowKelas === kelasAngka &&
-                rowSemester === semesterAngka
-              );
-            })
-            .map((row: any) => ({
-              bab: String(row.Data4 || "")
-                .replace(/[\u200B\u200C\u200D\uFEFF]/g, "")
-                .trim(),
-              tp: String(row.Data2 || "")
-                .replace(/[\u200B\u200C\u200D\uFEFF]/g, "")
-                .trim(),
-              rincian: String(row.Data3 || "")
-                .replace(/[\u200B\u200C\u200D\uFEFF]/g, "")
-                .trim(),
-            }))
-            .filter((item: any) => item.tp && item.rincian)
-            .sort((a: any, b: any) => {
-              // Urutkan berdasarkan BAB dulu, lalu nomor TP
-              const babA = parseFloat(a.bab) || 0;
-              const babB = parseFloat(b.bab) || 0;
-              if (babA !== babB) return babA - babB;
-              const [, subA] = a.tp.split(".").map(Number);
-              const [, subB] = b.tp.split(".").map(Number);
-              return (subA || 0) - (subB || 0);
-            });
-          console.log(
-            `✅ DataTP dari IndexedDB: ${tpTableData.length} TP ditemukan untuk ${mapelName} Kelas ${kelasName} Sem ${semesterName}`
-          );
-        } else {
-          console.warn(
-            "⚠️ IndexedDB STORE_TP kosong, tabel TP tidak akan ditampilkan"
-          );
+  // Coba dari IndexedDB dulu, fallback ke server jika kosong
+  let tpRows: any[] = [];
+  const tpCached = await idbLoad(STORE_TP);
+  if (tpCached && tpCached.length > 1) {
+    tpRows = tpCached.slice(1);
+    console.log(`✅ Pakai data TP dari IndexedDB: ${tpRows.length} baris`);
+  } else {
+    console.warn("⚠️ IndexedDB STORE_TP kosong, fetch DataTP dari server...");
+    try {
+      const tpRes = await fetch(`${endpoint}?sheet=DataTP`);
+      if (tpRes.ok) {
+        const tpJson = await tpRes.json();
+        if (tpJson.length > 1) {
+          tpRows = tpJson.slice(1);
+          console.log(`✅ Fallback berhasil: ${tpRows.length} baris TP dari server`);
         }
-      } catch (e) {
-        console.warn("Gagal load DataTP dari IndexedDB:", e);
       }
+    } catch (fetchErr) {
+      console.warn("Gagal fetch DataTP dari server:", fetchErr);
+    }
+  }
+
+  if (tpRows.length > 0) {
+    console.log("🔎 ALL KEYS di row pertama:", Object.keys(tpRows[0]));
+    console.log("🔎 Full row pertama:", JSON.stringify(tpRows[0]));
+
+    tpTableData = tpRows
+      .filter((row: any) => {
+        const rowMapel = (row.Data1 || "")
+          .replace(/[\u200B\u200C\u200D\uFEFF]/g, "")
+          .trim();
+        const rowKelas = String(row.Data6 ?? "").trim();
+        const rowSemester = String(row.Data5 ?? "").trim();
+        console.log(
+          `🔍 Cek: mapel="${rowMapel}" kelas="${rowKelas}" sem="${rowSemester}" | target: "${mapelName}" "${kelasAngka}" "${semesterAngka}"`
+        );
+        return (
+          rowMapel.toLowerCase() === mapelName.toLowerCase() &&
+          rowKelas === kelasAngka &&
+          rowSemester === semesterAngka
+        );
+      })
+      .map((row: any) => ({
+        bab: String(row.Data4 || "")
+          .replace(/[\u200B\u200C\u200D\uFEFF]/g, "")
+          .trim(),
+        tp: String(row.Data2 || "")
+          .replace(/[\u200B\u200C\u200D\uFEFF]/g, "")
+          .trim(),
+        rincian: String(row.Data3 || "")
+          .replace(/[\u200B\u200C\u200D\uFEFF]/g, "")
+          .trim(),
+      }))
+      .filter((item: any) => item.tp && item.rincian)
+      .sort((a: any, b: any) => {
+        const babA = parseFloat(a.bab) || 0;
+        const babB = parseFloat(b.bab) || 0;
+        if (babA !== babB) return babA - babB;
+        const [, subA] = a.tp.split(".").map(Number);
+        const [, subB] = b.tp.split(".").map(Number);
+        return (subA || 0) - (subB || 0);
+      });
+    console.log(
+      `✅ DataTP final: ${tpTableData.length} TP ditemukan untuk ${mapelName} Kelas ${kelasAngka} Sem ${semesterAngka}`
+    );
+  } else {
+    console.warn("⚠️ Tidak ada data TP sama sekali, tabel TP tidak ditampilkan");
+  }
+} catch (e) {
+  console.warn("Gagal load DataTP:", e);
+}
 
       // ─── TABEL DAFTAR TP ───
       if (tpTableData.length > 0) {
