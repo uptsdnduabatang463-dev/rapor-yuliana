@@ -58,7 +58,7 @@ interface KehadiranData {
 }
 
 const endpoint =
-  "https://script.google.com/macros/s/AKfycbyL7u7u9_1fbYADhkAxiJGTYX99DAWxIPhTcVBQGbqqvig_zPZHQRL7B0_X8caEiKXV/exec";
+  "https://script.google.com/macros/s/AKfycbzflAppA2O272ergb2AAJlVNDIk31N-mDsOtEGBp2qNQeeGIc7I6BgYqywnE-35Oj2m/exec";
 
 const throttle = (func: Function, delay: number) => {
   let timeoutId: ReturnType<typeof setTimeout> | null = null;
@@ -6026,7 +6026,7 @@ const InputTP = () => {
       const rowKelas = String(row.Data6 || "").trim();
       const kelasMatch = !targetKelas || rowKelas === targetKelas;
       if (hasData && kelasMatch) {
-        filteredWithMapping.push({ row, originalIndex: index + 2 });
+        filteredWithMapping.push({ row, originalIndex: index + 3 });
       }
     });
 
@@ -6709,14 +6709,18 @@ const InputTP = () => {
       // ✅ GUNAKAN ROW MAPPING untuk mendapatkan row index asli
       const originalRowIndex = rowMapping[rowIndex];
 
-      console.log(
-        `🗑️ Deleting row ${rowIndex} (UI) -> Row ${originalRowIndex} (Sheet)`
-      );
+      console.log(`🗑️ UI row: ${rowIndex}, Sheet row: ${originalRowIndex}`);
+
+      if (!originalRowIndex || originalRowIndex < 3) {
+        alert(`❌ rowIndex tidak valid: ${originalRowIndex}`);
+        setIsSaving(false);
+        return;
+      }
 
       const requestBody = {
         action: "delete_row",
         sheetName: "DataTP",
-        rowIndex: originalRowIndex, // ← HAPUS +1
+        rowIndex: originalRowIndex,
       };
 
       const response = await fetch(endpoint, {
@@ -8623,7 +8627,9 @@ const DataKokurikuler = () => {
     "Data10",
   ];
   const displayHeaders = headers.map((header) => data[0][header] || "");
-  const actualData = data.slice(1);
+  const actualData = data
+    .slice(1)
+    .filter((row) => row["Data1"] && String(row["Data1"]).trim() !== "");
 
   // Data1=nama siswa (frozen, readonly)
   // Data2-Data9 = kolom nilai kokurikuler (editable)
@@ -9025,7 +9031,9 @@ const DataEkstrakurikuler = () => {
 
   const headers = ["Data1", "Data2", "Data3", "Data4", "Data5", "Data6"];
   const displayHeaders = headers.map((header) => data[0][header] || "");
-  const actualData = data.slice(1);
+  const actualData = data
+    .slice(1)
+    .filter((row) => row["Data1"] && String(row["Data1"]).trim() !== "");
 
   const readOnlyHeaders = new Set([
     "Data1",
