@@ -12746,45 +12746,39 @@ const RekapNilai = () => {
       doc.setFont("helvetica", "normal");
 
       const leftCol = 20;
-      const rightCol = 130;
+      const rightCol = 140;
       const leftColTTD = 25;
       const centerColTTD = 100;
       const rightColTTD = 150;
       let y = 35;
 
-      doc.text("Nama Peserta Didik", leftCol, y);
-      doc.text(": " + namaSiswa.toUpperCase(), leftCol + 50, y);
-      doc.text("Kelas", rightCol, y);
-      doc.text(": " + kelas, rightCol + 30, y);
+      const colonLeft = leftCol + 33;  // posisi titik dua kolom kiri
+const colonRight = rightCol + 30; // posisi titik dua kolom kanan
 
-      y += 7;
-      doc.text("NISN", leftCol, y);
-      doc.text(`: ${nisn}`, leftCol + 50, y);
-      doc.text("Fase", rightCol, y);
-      doc.text(`: ${getFase(kelas)}`, rightCol + 30, y);
+doc.text("Nama Peserta Didik", leftCol, y);
+doc.text(": " + namaSiswa.toUpperCase(), colonLeft, y);
+doc.text("Kelas", rightCol, y);
+doc.text(": " + kelas, colonRight, y);
 
-      y += 7;
-      doc.text("Nama Sekolah", leftCol, y);
-      doc.text(
-        ": " + (latestSchoolData?.namaSekolah || "UPT SD NEGERI 2 BATANG"),
-        leftCol + 50,
-        y
-      );
-      doc.text("Semester", rightCol, y);
-      doc.text(": " + selectedSemester, rightCol + 30, y); // ✅ UBAH INI
+y += 7;
+doc.text("NISN", leftCol, y);
+doc.text(`: ${nisn}`, colonLeft, y);
+doc.text("Fase", rightCol, y);
+doc.text(`: ${getFase(kelas)}`, colonRight, y);
 
-      y += 7;
-      doc.text("Alamat Sekolah", leftCol, y);
-      const alamatLengkap = `${
-        latestSchoolData?.alamatSekolah || "Desa Bungeng, Kecamatan Batang"
-      }, ${latestSchoolData?.kabKota || ""}`;
-      doc.text(": " + alamatLengkap, leftCol + 50, y);
-      doc.text("Tahun Pelajaran", rightCol, y);
-      doc.text(
-        ": " + (latestSchoolData?.tahunPelajaran || "2023/2024"),
-        rightCol + 30,
-        y
-      );
+y += 7;
+doc.text("Nama Sekolah", leftCol, y);
+doc.text(": " + (latestSchoolData?.namaSekolah || "UPT SD NEGERI 2 BATANG"), colonLeft, y);
+doc.text("Semester", rightCol, y);
+doc.text(": " + selectedSemester, colonRight, y);
+
+y += 7;
+doc.text("Alamat Sekolah", leftCol, y);
+const alamatLengkap = `${latestSchoolData?.alamatSekolah || "Desa Bungeng, Kecamatan Batang"}, ${latestSchoolData?.kabKota || ""}`;
+const alamatLines = doc.splitTextToSize(": " + alamatLengkap, rightCol - colonLeft - 5);
+doc.text(alamatLines, colonLeft, y);
+doc.text("Tahun Pelajaran", rightCol, y);
+doc.text(": " + (latestSchoolData?.tahunPelajaran || "2023/2024"), colonRight, y);
 
       // ✅ FILTER sheet berdasarkan semester
       const semesterSheets = availableSheets.filter(
